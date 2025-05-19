@@ -31,18 +31,54 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  contactId:
-                    type: string
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      contactId:
+                        type: string
         400:
           description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
         401:
           description: Unauthorized
         409:
           description: Contact already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
         500:
           description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
   /api/contacts/remove:
     post:
       summary: Remove a user from contacts
@@ -70,16 +106,42 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  contactId:
-                    type: string
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      contactId:
+                        type: string
         400:
           description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
         401:
           description: Unauthorized
         500:
           description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
 components:
   securitySchemes:
     bearerAuth:

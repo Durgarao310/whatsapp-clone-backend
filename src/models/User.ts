@@ -6,6 +6,8 @@ export interface IUser extends Document {
   online: boolean;
   socketIds?: string[]; // Support multiple socket IDs
   contacts?: string[]; // User IDs this user is allowed to chat with
+  friendRequests?: string[]; // Incoming friend requests
+  sentRequests?: string[]; // Outgoing friend requests
 }
 
 const UserSchema = new Schema<IUser>({
@@ -14,6 +16,8 @@ const UserSchema = new Schema<IUser>({
   online: { type: Boolean, default: false },
   socketIds: { type: [String], default: [] }, // Array of socket IDs
   contacts: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Permission-based contacts
+  friendRequests: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Incoming friend requests
+  sentRequests: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Outgoing friend requests
 });
 
 export default mongoose.model<IUser>('User', UserSchema);

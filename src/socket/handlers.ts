@@ -5,6 +5,10 @@ import { setUserOnline, setUserOffline, getUserById } from '../services/user.ser
 import { createCall, updateCallStatus } from '../services/call.service';
 import { logger } from '../index';
 
+function emitSocketError(socket: Socket, message: string, code?: string) {
+  socket.emit('operation-error', { message, code });
+}
+
 export function registerSocketHandlers(io: Server) {
   io.on('connection', async (socket: Socket) => {
     const authedSocket = socket as AuthedSocket;
@@ -13,7 +17,8 @@ export function registerSocketHandlers(io: Server) {
       await setUserOnline(user.id, socket.id);
       io.emit('user-online', { userId: user.id });
     } catch (onlineErr) {
-      socket.emit('error', { message: 'Failed to set user online' });
+      logger.error('Socket: Failed to set user online', onlineErr);
+      emitSocketError(socket, 'Failed to set user online', 'USER_ONLINE_ERROR');
     }
 
     socket.on('private-message', async (payload: PrivateMessagePayload) => {
@@ -23,8 +28,9 @@ export function registerSocketHandlers(io: Server) {
         if (receiver?.socketIds && receiver.socketIds.length > 0) {
           receiver.socketIds.forEach((sid: string) => io.to(sid).emit('private-message', message));
         }
-      } catch (msgErr) {
-        socket.emit('error', { message: 'Failed to send message' });
+      } catch (err: any) {
+        logger.error('Socket: Failed to send message', err);
+        emitSocketError(socket, err?.message || 'Failed to send message', 'SEND_MESSAGE_ERROR');
       }
     });
 
@@ -37,8 +43,9 @@ export function registerSocketHandlers(io: Server) {
             sender.socketIds.forEach((sid: string) => io.to(sid).emit('message-seen', { messageId: updated._id }));
           }
         }
-      } catch (seenErr) {
-        socket.emit('error', { message: 'Failed to mark message as seen' });
+      } catch (err: any) {
+        logger.error('Socket: Failed to mark message as seen', err);
+        emitSocketError(socket, err?.message || 'Failed to mark message as seen', 'MESSAGE_SEEN_ERROR');
       }
     });
 
@@ -51,8 +58,9 @@ export function registerSocketHandlers(io: Server) {
         if (callee?.socketIds && callee.socketIds.length > 0) {
           callee.socketIds.forEach((sid: string) => io.to(sid).emit('call-user', { ...payload, callId: call._id }));
         }
-      } catch (callErr) {
-        socket.emit('error', { message: 'Failed to initiate call' });
+      } catch (err: any) {
+        logger.error('Socket: Failed to initiate call', err);
+        emitSocketError(socket, err?.message || 'Failed to initiate call', 'CALL_USER_ERROR');
       }
     });
 
@@ -62,8 +70,9 @@ export function registerSocketHandlers(io: Server) {
         if (caller?.socketIds && caller.socketIds.length > 0) {
           caller.socketIds.forEach((sid: string) => io.to(sid).emit('answer-call', payload));
         }
-      } catch (callerErr) {
-        socket.emit('error', { message: 'Failed to answer call' });
+      } catch (err: any) {
+        logger.error('Socket: Failed to answer call', err);
+        emitSocketError(socket, err?.message || 'Failed to answer call', 'ANSWER_CALL_ERROR');
       }
     });
 
@@ -73,8 +82,9 @@ export function registerSocketHandlers(io: Server) {
         if (callee?.socketIds && callee.socketIds.length > 0) {
           callee.socketIds.forEach((sid: string) => io.to(sid).emit('ice-candidate', payload));
         }
-      } catch (calleeErr) {
-        socket.emit('error', { message: 'Failed to send ICE candidate' });
+      } catch (err: any) {
+        logger.error('Socket: Failed to send ICE candidate', err);
+        emitSocketError(socket, err?.message || 'Failed to send ICE candidate', 'ICE_CANDIDATE_ERROR');
       }
     });
 
@@ -85,8 +95,9 @@ export function registerSocketHandlers(io: Server) {
         if (peer?.socketIds && peer.socketIds.length > 0) {
           peer.socketIds.forEach((sid: string) => io.to(sid).emit('end-call', payload));
         }
-      } catch (endErr) {
-        socket.emit('error', { message: 'Failed to end call' });
+      } catch (err: any) {
+        logger.error('Socket: Failed to end call', err);
+        emitSocketError(socket, err?.message || 'Failed to end call', 'END_CALL_ERROR');
       }
     });
 
@@ -98,9 +109,7 @@ export function registerSocketHandlers(io: Server) {
           io.emit('user-offline', { userId: user.id });
         }
       } catch (offErr) {
-        if (process.env.NODE_ENV === 'development') {
-          logger.error('Socket disconnect error:', offErr);
-        }
+        logger.error('Socket disconnect error:', offErr);
       }
     });
   });

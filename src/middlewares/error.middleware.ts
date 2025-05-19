@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 
 export class AppError extends Error {
   statusCode: number;
-  constructor(message: string, statusCode = httpStatus.INTERNAL_SERVER_ERROR) {
+  constructor(message: string, statusCode: number = httpStatus.INTERNAL_SERVER_ERROR) {
     super(message);
     this.statusCode = statusCode;
     Error.captureStackTrace(this, this.constructor);

@@ -33,19 +33,45 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
-                    type: string
-                  user:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
                     type: object
                     properties:
-                      id:
+                      token:
                         type: string
-                      username:
-                        type: string
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          username:
+                            type: string
         400:
           description: Validation error or username taken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
         500:
           description: Registration failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
       security:
         - bearerAuth: []
   /api/auth/login:

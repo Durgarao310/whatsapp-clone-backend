@@ -100,6 +100,18 @@ The server will not start if required variables are missing.
 
 ---
 
+## Security Best Practice: JWT Secret Management
+
+For enhanced security in production environments, it is recommended to store your JWT secret using a secrets manager (such as AWS Secrets Manager, Azure Key Vault, or HashiCorp Vault) or use encrypted environment variables. Avoid hardcoding secrets or storing them in plaintext `.env` files in version control.
+
+Example (for AWS Secrets Manager):
+- Store your secret in AWS Secrets Manager.
+- Fetch the secret at runtime and set it as `process.env.JWT_SECRET` before starting the server.
+
+This helps prevent accidental exposure of sensitive credentials.
+
+---
+
 ## License
 MIT
 # whatsapp-clone-backend

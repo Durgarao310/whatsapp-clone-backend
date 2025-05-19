@@ -1,18 +1,33 @@
+/**
+ * @route GET /api/user/profile
+ * @desc Get the authenticated user's profile
+ * @returns { success: true, data: { user: { id, username, online, socketIds, contacts } } } on success
+ * @returns { success: false, message: string } on error
+ */
 import { AuthedRequest } from '../types';
 import catchAsync from '../helpers/catchAsync';
+import { AppError } from '../middlewares/error.middleware';
+import User from '../models/User';
 
-// Example controller: Get user profile
 export const getUserProfile = catchAsync<AuthedRequest>(async (req, res) => {
   if (!req.user) {
-    res.status(401).json({ message: 'Unauthorized' });
-    return;
+    // Consistent error handling
+    throw new AppError('Unauthorized', 401);
   }
-  const userId = req.user.id;
+  const user = await User.findById(req.user.id).select('username online socketIds contacts');
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
   res.status(200).json({
-    message: 'User profile fetched successfully',
-    user: {
-      id: userId,
-      username: req.user.username
+    success: true,
+    data: {
+      user: {
+        id: user._id,
+        username: user.username,
+        online: user.online,
+        socketIds: user.socketIds,
+        contacts: user.contacts
+      }
     }
   });
 });

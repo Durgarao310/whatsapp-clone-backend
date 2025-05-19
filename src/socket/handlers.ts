@@ -63,10 +63,10 @@ export function registerSocketHandlers(io: Server) {
           }
         }
       } catch (err: any) {
-        logger.error('Socket: Failed to mark message as seen', { 
-          error: err, 
-          messageId: payload.messageId, 
-          userId: payload.userId 
+        logger.error('Socket: Failed to mark message as seen', {
+          error: err,
+          messageId: payload.messageId,
+          userId: payload.userId
         });
         emitSocketError(socket, err?.message || 'Failed to mark message as seen', 'MESSAGE_SEEN_ERROR');
       }

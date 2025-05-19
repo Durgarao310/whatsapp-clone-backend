@@ -6,8 +6,6 @@ export interface IUser extends Document {
   online: boolean;
   socketIds?: string[]; // Support multiple socket IDs
   contacts?: string[]; // User IDs this user is allowed to chat with
-  friendRequests?: string[]; // Incoming friend requests
-  sentRequests?: string[]; // Outgoing friend requests
 }
 
 const UserSchema = new Schema<IUser>({
@@ -16,14 +14,18 @@ const UserSchema = new Schema<IUser>({
   online: { type: Boolean, default: false },
   socketIds: { type: [String], default: [] }, // Array of socket IDs
   contacts: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Permission-based contacts
-  friendRequests: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Incoming friend requests
-  sentRequests: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Outgoing friend requests
 });
 
-// Add indexes to contacts, friendRequests, and sentRequests
+// Normalize username to lowercase before saving
+UserSchema.pre('save', function (next) {
+  if (this.isModified('username') && typeof this.username === 'string') {
+    this.username = this.username.toLowerCase();
+  }
+  next();
+});
+
+// Add indexes to contacts
 UserSchema.index({ contacts: 1 });
-UserSchema.index({ friendRequests: 1 });
-UserSchema.index({ sentRequests: 1 });
 
 // Exclude password from query results by default
 UserSchema.set('toJSON', {

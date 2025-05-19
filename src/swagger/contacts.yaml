@@ -183,11 +183,64 @@ paths:
                           friendRequests:
                             type: array
                             items:
-                              $ref: '#/components/schemas/User'
+                              $ref: '#/components/schemas/FriendRequest'
                           sentRequests:
                             type: array
                             items:
-                              $ref: '#/components/schemas/User'
+                              $ref: '#/components/schemas/FriendRequest'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+  /api/contacts/requests:
+    get:
+      summary: Get pending friend requests (received and sent)
+      tags:
+        - Contacts
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of pending friend requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      received:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FriendRequest'
+                      sent:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FriendRequest'
         401:
           description: Unauthorized
           content:
@@ -263,3 +316,19 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  schemas:
+    FriendRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        from:
+          $ref: '#/components/schemas/User'
+        to:
+          $ref: '#/components/schemas/User'
+        status:
+          type: string
+          enum: [pending, accepted, rejected]
+        createdAt:
+          type: string
+          format: date-time

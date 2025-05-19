@@ -9,6 +9,7 @@ import {
 } from '../services/contact.service';
 import { AppError } from '../middlewares/error.middleware';
 import User from '../models/User';
+import FriendRequest from '../models/FriendRequest';
 
 /**
  * @route POST /api/contacts/add
@@ -92,15 +93,17 @@ export const rejectFriendRequest = catchAsync<AuthedRequest>(async (req, res) =>
  */
 export const getFriendRequests = catchAsync<AuthedRequest>(async (req, res) => {
   if (!req.user) throw new AppError('Unauthorized', 401);
-  const user = await User.findById(req.user.id)
-    .populate('friendRequests', 'id username online socketIds')
-    .populate('sentRequests', 'id username online socketIds');
-  if (!user) throw new AppError('User not found', 404);
+  const userId = req.user.id;
+  // Find pending friend requests where user is receiver (received) or sender (sent)
+  const received = await FriendRequest.find({ to: userId, status: 'pending' })
+    .populate('from', 'id username online socketIds');
+  const sent = await FriendRequest.find({ from: userId, status: 'pending' })
+    .populate('to', 'id username online socketIds');
   res.json({
     success: true,
     data: {
-      received: user.friendRequests,
-      sent: user.sentRequests
+      received,
+      sent
     }
   });
 });
@@ -113,10 +116,13 @@ export const getFriendRequests = catchAsync<AuthedRequest>(async (req, res) => {
 export const getFullUserProfile = catchAsync<AuthedRequest>(async (req, res) => {
   if (!req.user) throw new AppError('Unauthorized', 401);
   const user = await User.findById(req.user.id)
-    .populate('contacts', 'id username online socketIds')
-    .populate('friendRequests', 'id username online socketIds')
-    .populate('sentRequests', 'id username online socketIds');
+    .populate('contacts', 'id username online socketIds');
   if (!user) throw new AppError('User not found', 404);
+  // Get pending friend requests
+  const received = await FriendRequest.find({ to: user._id, status: 'pending' })
+    .populate('from', 'id username online socketIds');
+  const sent = await FriendRequest.find({ from: user._id, status: 'pending' })
+    .populate('to', 'id username online socketIds');
   res.json({
     success: true,
     data: {
@@ -126,8 +132,8 @@ export const getFullUserProfile = catchAsync<AuthedRequest>(async (req, res) => 
         online: user.online,
         socketIds: user.socketIds,
         contacts: user.contacts,
-        friendRequests: user.friendRequests,
-        sentRequests: user.sentRequests
+        friendRequests: received,
+        sentRequests: sent
       }
     }
   });

@@ -43,3 +43,20 @@ export interface AuthedRequest extends Request {
 export interface AuthedSocket extends IOSocket {
   user: AuthedUser;
 }
+
+export interface MessageReadPayload {
+  messageId: string;
+}
+
+// New Payloads for socket handlers
+export interface FriendRequestPayload {
+  targetUserId: string;
+}
+
+export interface FriendRequestActionPayload {
+  senderId: string; // The ID of the user who initially sent the request
+}
+
+export interface TypingPayload {
+  receiverId: string;
+}

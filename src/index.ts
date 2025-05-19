@@ -9,7 +9,7 @@ import callRoutes from './routes/call.routes';
 import chatRoutes from './routes/chat.routes';
 import contactRoutes from './routes/contact.routes';
 import { globalErrorHandler } from './middlewares/error.middleware';
-import winston from 'winston';
+import logger, { stream as loggerStream } from './helpers/logger'; // Import new logger
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
@@ -47,19 +47,6 @@ const io = new SocketIOServer(server, {
   },
 });
 setSocketServer(io);
-
-// Winston logger setup
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console(),
-    // Add file transports for production if needed
-  ],
-});
 
 // Middleware
 app.use(cors({

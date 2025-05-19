@@ -142,6 +142,121 @@ paths:
                     example: false
                   message:
                     type: string
+  /api/contacts/profile:
+    get:
+      summary: Get the authenticated user's full profile (contacts, friend requests, sent requests)
+      tags:
+        - Contacts
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Full user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          username:
+                            type: string
+                          online:
+                            type: boolean
+                          socketIds:
+                            type: array
+                            items:
+                              type: string
+                          contacts:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/User'
+                          friendRequests:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/User'
+                          sentRequests:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/User'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+# --- Socket.IO Events for Friend Requests ---
+x-socketio-events:
+  - name: friend_request_received
+    direction: server -> client
+    description: Emitted to the target user when a friend request is received.
+    payload:
+      type: object
+      properties:
+        senderId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+  - name: friend_request_accepted
+    direction: server -> client
+    description: Emitted to the sender when their friend request is accepted.
+    payload:
+      type: object
+      properties:
+        accepterId:
+          type: string
+  - name: friend_request_rejected
+    direction: server -> client
+    description: Emitted to the sender when their friend request is rejected.
+    payload:
+      type: object
+      properties:
+        rejecterId:
+          type: string
+  - name: typing
+    direction: server -> client
+    description: Emitted to a contact when the user is typing a message.
+    payload:
+      type: object
+      properties:
+        senderId:
+          type: string
+  - name: stop_typing
+    direction: server -> client
+    description: Emitted to a contact when the user stops typing.
+    payload:
+      type: object
+      properties:
+        senderId:
+          type: string
 components:
   securitySchemes:
     bearerAuth:

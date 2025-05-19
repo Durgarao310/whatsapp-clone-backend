@@ -20,4 +20,23 @@ const UserSchema = new Schema<IUser>({
   sentRequests: { type: [Schema.Types.ObjectId], ref: 'User', default: [] }, // Outgoing friend requests
 });
 
+// Add indexes to contacts, friendRequests, and sentRequests
+UserSchema.index({ contacts: 1 });
+UserSchema.index({ friendRequests: 1 });
+UserSchema.index({ sentRequests: 1 });
+
+// Exclude password from query results by default
+UserSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    delete ret.password;
+    return ret;
+  }
+});
+UserSchema.set('toObject', {
+  transform: function (doc, ret) {
+    delete ret.password;
+    return ret;
+  }
+});
+
 export default mongoose.model<IUser>('User', UserSchema);

@@ -36,13 +36,22 @@ Use after validation arrays in routes.
 ---
 
 ## Environment Variables
-- `MONGO_URI` (required)
-- `JWT_SECRET` (required)
-- `dbName` (required)
-- `ALLOWED_ORIGINS` (comma-separated, for CORS)
-- `PORT` (optional, default 5000)
 
-The server will not start if required variables are missing.
+Create a `.env` file in the project root with the following variables:
+
+```env
+MONGO_URI=mongodb+srv://<user>:<password>@host/db
+JWT_SECRET=your_jwt_secret_here
+dbName=realtime-chat
+ALLOWED_ORIGINS=http://localhost:3000
+PORT=5000
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_USERNAME=default
+REDIS_PASSWORD=your_redis_password
+```
+
+> The server will not start if required variables are missing.
 
 ---
 
@@ -82,15 +91,45 @@ The server will not start if required variables are missing.
 ---
 
 ## Project Structure
-- `controllers/` - Route handlers
-- `services/` - Business logic
-- `models/` - Mongoose schemas
-- `routes/` - Express routers
-- `helpers/` - Async, validation, and JWT helpers
-- `validation/` - All validation logic
-- `middlewares/` - Express and Socket middlewares
-- `socket/` - Socket.IO logic
-- `__tests__/` - Tests
+
+```
+src/
+  controllers/      # Route handlers (API logic)
+  services/         # Business logic (DB, processing)
+  models/           # Mongoose schemas (User, Message, Call)
+  routes/           # Express routers (API endpoints)
+  helpers/          # Async, validation, JWT, and utility helpers
+  middlewares/      # Express and Socket middlewares (auth, error)
+  socket/           # Socket.IO event handlers and setup
+  validation/       # All validation logic (express-validator)
+  swagger/          # OpenAPI YAML files for API docs
+  __tests__/        # Integration and edge-case tests (Jest)
+  types/            # Custom TypeScript types and module declarations
+index.ts            # App entry point (Express, Socket.IO, Redis, Swagger)
+```
+
+---
+
+## Socket.IO Events
+
+| Event Name         | Direction      | Payload Example / Description                                 |
+|--------------------|---------------|--------------------------------------------------------------|
+| private-message    | client/server | `{ senderId, receiverId, content }`                          |
+| message-seen       | client/server | `{ messageId, userId }`                                      |
+| user-online        | server        | `{ userId }`                                                 |
+| user-offline       | server        | `{ userId }`                                                 |
+| call-user          | client/server | `{ callerId, calleeId, signal }`                             |
+| answer-call        | client/server | `{ callId, callerId, calleeId, signal }`                     |
+| ice-candidate      | client/server | `{ callerId, calleeId, signal }`                             |
+| end-call           | client/server | `{ callId, status, userId, peerId }`                         |
+| operation-error    | server        | `{ message, code }`                                          |
+| friend-request     | server        | `{ fromUserId, toUserId }` (planned: on send/accept/reject)  |
+
+**Flow Example:**
+- `private-message`: Sent by client to server, then relayed to receiver's sockets.
+- `user-online`/`user-offline`: Broadcast by server when a user connects/disconnects.
+- `call-user`, `answer-call`, `ice-candidate`, `end-call`: Used for WebRTC signaling.
+- `friend-request`: (Planned) Notify users of new, accepted, or rejected friend requests.
 
 ---
 

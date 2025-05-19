@@ -101,6 +101,85 @@ export function registerSocketHandlers(io: Server) {
       }
     });
 
+    // --- Friend Request Real-Time Events ---
+    socket.on('send_friend_request', async ({ targetUserId }, callback) => {
+      try {
+        const senderId = user.id;
+        const targetUser = await getUserById(targetUserId);
+        if (!targetUser || !targetUser.socketIds) {
+          return callback?.({ success: false, message: 'User not found' });
+        }
+        targetUser.socketIds.forEach((sid: string) => io.to(sid).emit('friend_request_received', {
+          senderId,
+          createdAt: new Date(),
+        }));
+        callback?.({ success: true });
+      } catch (error) {
+        callback?.({ success: false, message: 'Failed to send friend request' });
+      }
+    });
+
+    socket.on('accept_friend_request', async ({ senderId }, callback) => {
+      try {
+        const accepterId = user.id;
+        const sender = await getUserById(senderId);
+        if (!sender || !sender.socketIds) {
+          return callback?.({ success: false, message: 'User not found' });
+        }
+        sender.socketIds.forEach((sid: string) => io.to(sid).emit('friend_request_accepted', { accepterId }));
+        callback?.({ success: true });
+      } catch (error) {
+        callback?.({ success: false, message: 'Failed to accept friend request' });
+      }
+    });
+
+    socket.on('reject_friend_request', async ({ senderId }, callback) => {
+      try {
+        const rejecterId = user.id;
+        const sender = await getUserById(senderId);
+        if (!sender || !sender.socketIds) {
+          return callback?.({ success: false, message: 'User not found' });
+        }
+        sender.socketIds.forEach((sid: string) => io.to(sid).emit('friend_request_rejected', { rejecterId }));
+        callback?.({ success: true });
+      } catch (error) {
+        callback?.({ success: false, message: 'Failed to reject friend request' });
+      }
+    });
+
+    // --- Typing Indicators ---
+    socket.on('typing', async ({ receiverId }, callback) => {
+      try {
+        const senderId = user.id;
+        const receiver = await getUserById(receiverId);
+        if (!receiver || !receiver.contacts?.map((id: any) => id.toString()).includes(senderId)) {
+          return callback?.({ success: false, message: 'Invalid receiver or not a contact' });
+        }
+        if (receiver.socketIds && receiver.socketIds.length > 0) {
+          receiver.socketIds.forEach((sid: string) => io.to(sid).emit('typing', { senderId }));
+        }
+        callback?.({ success: true });
+      } catch (error) {
+        callback?.({ success: false, message: 'Failed to send typing event' });
+      }
+    });
+
+    socket.on('stop_typing', async ({ receiverId }, callback) => {
+      try {
+        const senderId = user.id;
+        const receiver = await getUserById(receiverId);
+        if (!receiver || !receiver.contacts?.map((id: any) => id.toString()).includes(senderId)) {
+          return callback?.({ success: false, message: 'Invalid receiver or not a contact' });
+        }
+        if (receiver.socketIds && receiver.socketIds.length > 0) {
+          receiver.socketIds.forEach((sid: string) => io.to(sid).emit('stop_typing', { senderId }));
+        }
+        callback?.({ success: true });
+      } catch (error) {
+        callback?.({ success: false, message: 'Failed to send stop typing event' });
+      }
+    });
+
     socket.on('disconnect', async () => {
       try {
         await setUserOffline(user.id, socket.id);

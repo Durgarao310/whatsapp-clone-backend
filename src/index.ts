@@ -17,6 +17,7 @@ import path from 'path';
 import connectMongo from './helpers/mongoClient';
 import { setupRedisAdapter } from './helpers/redisAdapter';
 import { setupSwagger } from './helpers/swagger';
+import { setSocketServer } from './helpers/socket';
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Startup check for required environment variables
@@ -45,6 +46,7 @@ const io = new SocketIOServer(server, {
     credentials: true,
   },
 });
+setSocketServer(io);
 
 // Winston logger setup
 const logger = winston.createLogger({

@@ -8,6 +8,7 @@ import {
   rejectFriendRequestService,
 } from '../services/contact.service';
 import { AppError } from '../middlewares/error.middleware';
+import User from '../models/User';
 
 /**
  * @route POST /api/contacts/add
@@ -82,4 +83,52 @@ export const rejectFriendRequest = catchAsync<AuthedRequest>(async (req, res) =>
   const { requesterId } = req.body;
   const result = await rejectFriendRequestService(userId, requesterId);
   res.json({ success: true, data: { message: 'Friend request rejected', requesterId: result } });
+});
+
+/**
+ * @route GET /api/contacts/requests
+ * @desc Get pending friend requests (received and sent)
+ * @returns { success: true, data: { received: User[], sent: User[] } }
+ */
+export const getFriendRequests = catchAsync<AuthedRequest>(async (req, res) => {
+  if (!req.user) throw new AppError('Unauthorized', 401);
+  const user = await User.findById(req.user.id)
+    .populate('friendRequests', 'id username online socketIds')
+    .populate('sentRequests', 'id username online socketIds');
+  if (!user) throw new AppError('User not found', 404);
+  res.json({
+    success: true,
+    data: {
+      received: user.friendRequests,
+      sent: user.sentRequests
+    }
+  });
+});
+
+/**
+ * @route GET /api/contacts/profile
+ * @desc Get the authenticated user's full profile, including contacts, friend requests, and sent requests
+ * @returns { success: true, data: { user: { id, username, online, socketIds, contacts, friendRequests, sentRequests } } }
+ */
+export const getFullUserProfile = catchAsync<AuthedRequest>(async (req, res) => {
+  if (!req.user) throw new AppError('Unauthorized', 401);
+  const user = await User.findById(req.user.id)
+    .populate('contacts', 'id username online socketIds')
+    .populate('friendRequests', 'id username online socketIds')
+    .populate('sentRequests', 'id username online socketIds');
+  if (!user) throw new AppError('User not found', 404);
+  res.json({
+    success: true,
+    data: {
+      user: {
+        id: user._id,
+        username: user.username,
+        online: user.online,
+        socketIds: user.socketIds,
+        contacts: user.contacts,
+        friendRequests: user.friendRequests,
+        sentRequests: user.sentRequests
+      }
+    }
+  });
 });

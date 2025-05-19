@@ -2,6 +2,7 @@ import User from '../models/User';
 import { logger } from '../index';
 import { AppError } from '../middlewares/error.middleware';
 import httpStatus from 'http-status';
+import { getSocketServer } from '../helpers/socket';
 
 export async function addContactService(userId: string, contactId: string) {
   const user = await User.findById(userId);
@@ -43,6 +44,16 @@ export async function sendFriendRequestService(userId: string, targetId: string)
   target.friendRequests.push(userId);
   await user.save();
   await target.save();
+  // Real-time notification
+  try {
+    const io = getSocketServer();
+    if (target.socketIds && target.socketIds.length > 0) {
+      target.socketIds.forEach((sid: string) => io.to(sid).emit('friend_request_received', {
+        senderId: userId,
+        createdAt: new Date(),
+      }));
+    }
+  } catch (e) {/* ignore if socket not available */}
   return targetId;
 }
 
@@ -59,6 +70,15 @@ export async function acceptFriendRequestService(userId: string, requesterId: st
   requester.contacts.push(userId);
   await user.save();
   await requester.save();
+  // Real-time notification
+  try {
+    const io = getSocketServer();
+    if (requester.socketIds && requester.socketIds.length > 0) {
+      requester.socketIds.forEach((sid: string) => io.to(sid).emit('friend_request_accepted', {
+        accepterId: userId,
+      }));
+    }
+  } catch (e) {/* ignore if socket not available */}
   return requesterId;
 }
 
@@ -71,5 +91,14 @@ export async function rejectFriendRequestService(userId: string, requesterId: st
   requester.sentRequests = requester.sentRequests ? requester.sentRequests.filter(id => id.toString() !== userId) : [];
   await user.save();
   await requester.save();
+  // Real-time notification
+  try {
+    const io = getSocketServer();
+    if (requester.socketIds && requester.socketIds.length > 0) {
+      requester.socketIds.forEach((sid: string) => io.to(sid).emit('friend_request_rejected', {
+        rejecterId: userId,
+      }));
+    }
+  } catch (e) {/* ignore if socket not available */}
   return requesterId;
 }

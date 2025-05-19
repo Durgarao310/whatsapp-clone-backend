@@ -11,11 +11,12 @@ export class AppError extends Error {
 }
 
 export function globalErrorHandler(err: any, req: Request, res: Response, next: NextFunction) {
-  // express-validator errors
-  if (err && err.errors && Array.isArray(err.errors)) {
+  // express-validator errors (from handleValidation or thrown)
+  if (err && (err.errors && Array.isArray(err.errors) || typeof err.array === 'function')) {
+    const errors = err.errors || (typeof err.array === 'function' ? err.array() : []);
     return res.status(httpStatus.BAD_REQUEST).json({
       message: 'Validation error',
-      errors: err.errors,
+      errors,
     });
   }
 

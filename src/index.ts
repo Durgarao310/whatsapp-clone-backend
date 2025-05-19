@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.routes';
 import messageRoutes from './routes/message.routes';
 import callRoutes from './routes/call.routes';
 import chatRoutes from './routes/chat.routes';
+import contactRoutes from './routes/contact.routes';
 import { globalErrorHandler } from './middlewares/error.middleware';
 import winston from 'winston';
 import helmet from 'helmet';
@@ -95,6 +96,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/calls', callRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/contacts', contactRoutes);
 
 // Health check
 app.get('/health', function (_req, res) {

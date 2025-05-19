@@ -1,6 +1,5 @@
 import Message from '../models/Message';
 import User from '../models/User';
-import { asyncatch } from '../helpers/asyncatch';
 import { logger } from '../index';
 
 /**

@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: Realtime Chat API
+  version: 1.0.0
+  description: API documentation for the Realtime Chat Backend
+paths:
+  /api/contacts/add:
+    post:
+      summary: Add a user to contacts (permission to chat)
+      tags:
+        - Contacts
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contactId
+              properties:
+                contactId:
+                  type: string
+                  description: The user ID to add as a contact
+      responses:
+        200:
+          description: Contact added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  contactId:
+                    type: string
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+        409:
+          description: Contact already exists
+        500:
+          description: Server error
+  /api/contacts/remove:
+    post:
+      summary: Remove a user from contacts
+      tags:
+        - Contacts
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contactId
+              properties:
+                contactId:
+                  type: string
+                  description: The user ID to remove from contacts
+      responses:
+        200:
+          description: Contact removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  contactId:
+                    type: string
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

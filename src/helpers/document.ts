@@ -1,10 +1,13 @@
 // filepath: src/helpers/document.ts
 /**
- * saveDoc - Utility to save a Mongoose document with asyncatch error handling.
- * Usage: const [saved, err] = await saveDoc(doc);
+ * saveDoc - Utility to save a Mongoose document with error handling.
+ * Usage: const saved = await saveDoc(doc);
  */
-import { asyncatch } from './asyncatch';
 
-export async function saveDoc<T extends { save: () => Promise<T> }>(doc: T): Promise<[T | null, any]> {
-  return asyncatch(doc.save());
+export async function saveDoc<T extends { save: () => Promise<T> }>(doc: T): Promise<T> {
+  try {
+    return await doc.save();
+  } catch (err) {
+    throw err;
+  }
 }

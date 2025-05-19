@@ -1,8 +1,8 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { register, login } from '../controllers/auth.controller';
 import { registerValidation, loginValidation } from '../validation/authValidation';
-import { handleValidation } from '../helpers/validation';
+import { handleValidationMiddleware } from '../helpers/validation';
 
 const router = Router();
 
@@ -16,7 +16,7 @@ router.post(
   '/register',
   authLimiter,
   registerValidation,
-  function(req: any, res: any, next: any) { handleValidation(req, res, next); },
+  handleValidationMiddleware,
   register
 );
 
@@ -24,7 +24,7 @@ router.post(
   '/login',
   authLimiter,
   loginValidation,
-  function(req: any, res: any, next: any) { handleValidation(req, res, next); },
+  handleValidationMiddleware,
   login
 );
 

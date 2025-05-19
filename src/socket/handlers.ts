@@ -24,6 +24,11 @@ export function registerSocketHandlers(io: Server) {
   io.on('connection', async (socket: Socket) => {
     const authedSocket = socket as AuthedSocket;
     const user = authedSocket.user;
+    if (!user) {
+      logger.error('Socket: No user found on socket');
+      socket.disconnect();
+      return;
+    }
     try {
       await setUserOnline(user.id, socket.id);
       io.emit('user-online', { userId: user.id });

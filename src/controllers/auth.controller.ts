@@ -8,8 +8,8 @@ import httpStatus from 'http-status';
 import redisClient from '../helpers/redisClient';
 import logger from '../helpers/logger';
 
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_MINUTES = 15;
+const MAX_FAILED_ATTEMPTS = parseInt(process.env.MAX_FAILED_ATTEMPTS || '5', 10);
+const LOCKOUT_MINUTES = parseInt(process.env.LOCKOUT_MINUTES || '15', 10);
 
 /**
  * @route POST /api/auth/register

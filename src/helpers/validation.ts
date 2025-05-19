@@ -6,7 +6,7 @@ import httpStatus from 'http-status';
 export function handleValidation(req: Request, res: Response, next: NextFunction) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error', errors: errors.array() });
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: 'Validation error', errors: errors.array() });
   }
   next();
 }
